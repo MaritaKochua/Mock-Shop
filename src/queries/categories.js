@@ -1,8 +1,16 @@
-import { gql } from "@apollo/client";
+import { gql } from '@apollo/client'
 
-const CATEGORIES = gql`
+export const CATEGORIES = gql`
   {
     categories {
+      name
+    }
+  }
+`
+
+export const PRODUCTS = gql`
+  query category($category: String!) {
+    category(input: { title: $category }) {
       name
       products {
         id
@@ -32,6 +40,4 @@ const CATEGORIES = gql`
       }
     }
   }
-`;
-
-export default CATEGORIES;
+`

@@ -1,60 +1,63 @@
-import React from "react";
-import withRouter from "./utils/withRouter";
-import { connect } from "react-redux";
-import CATEGORIES from "./queries/categories";
-import { client } from ".";
-import { generateAttributes } from "./common/generateAttributes";
-import { onAddToCart } from "./common/onAddToCart";
+import React from 'react'
+import withRouter from './utils/withRouter'
+import { connect } from 'react-redux'
+import { PRODUCT } from './queries/product'
+import { client } from '.'
+import { generateAttributes } from './utils/generateAttributes'
+import { addToCartFunc } from './utils/addToCartFunc.js'
+import parse from 'html-react-parser'
+import PropTypes from 'prop-types'
 
 class ItemPage extends React.Component {
-  constructor(props) {
-    super(props);
+  constructor (props) {
+    super(props)
     this.state = {
       product: {},
       mainPhoto: 0,
       attributes: [],
-      isButtonDisabled: true,
-    };
-    this.onChangeAttr = this.onChangeAttr.bind(this);
-    this.findPrice = this.findPrice.bind(this);
+      isButtonDisabled: true
+    }
+    this.onChangeAttr = this.onChangeAttr.bind(this)
+    this.findPrice = this.findPrice.bind(this)
   }
 
-  componentDidMount = () => {
-    client.query({ query: CATEGORIES }).then((res) => {
-      const category = res.data.categories.find((category) =>
-        category.products.some((prod) => prod.id === this.props.params.itemId)
-      );
-      const product = category.products.find(
-        (prod) => prod.id === this.props.params.itemId
-      );
-      this.setState({ product: product });
-      const attributes = [];
-      product.attributes.map((attr) => attributes.push({ name: attr.name }));
-      this.setState({ attributes: attributes });
-      this.state.attributes.length < 1 &&
-        this.setState({ isButtonDisabled: false });
-    });
+  componentDidMount () {
+    client
+      .query({
+        query: PRODUCT,
+        variables: { id: this.props.params.itemId }
+      })
+      .then((res) => {
+        this.setState({ product: res.data.product })
+        const attributes = []
+        res.data.product.attributes.map((attr) =>
+          attributes.push({ name: `${res.data.product.id}${attr.name}` })
+        )
+        this.setState({ attributes: attributes })
+        this.state.attributes.length < 1 &&
+          this.setState({ isButtonDisabled: false })
+      })
   };
 
-  onChangeAttr(e) {
-    let newAttrArray = this.state.attributes;
+  onChangeAttr (e) {
+    const newAttrArray = { ...this.state.attributes }
     const objIndex = this.state.attributes.findIndex(
       (obj) => obj.name === e.target.name
-    );
-    newAttrArray[objIndex].value = e.target.value;
+    )
+    newAttrArray[objIndex].value = e.target.value
     this.state.attributes.every((attr) => attr.value)
       ? this.setState({ isButtonDisabled: false })
-      : this.setState({ isButtonDisabled: true });
+      : this.setState({ isButtonDisabled: true })
   }
 
-  findPrice() {
+  findPrice () {
     const currency = this.state.product.prices.find(
       (prod) => prod.currency.label === this.props.currency
-    );
-    return currency.currency.symbol + currency.amount;
+    )
+    return currency.currency.symbol + currency.amount
   }
 
-  render() {
+  render () {
     return (
       <div className="itemPageContainer">
         {/* photos */}
@@ -68,7 +71,7 @@ class ItemPage extends React.Component {
                   style={{ backgroundImage: `url(${photo})` }}
                   onClick={() => this.setState({ mainPhoto: index })}
                 ></div>
-              );
+              )
             })}
           </div>
         )}
@@ -79,7 +82,7 @@ class ItemPage extends React.Component {
             style={{
               backgroundImage: `url(${
                 this.state.product.gallery[this.state.mainPhoto]
-              })`,
+              })`
             }}
           ></div>
         )}
@@ -94,9 +97,13 @@ class ItemPage extends React.Component {
                   return (
                     <div key={attributeSet.id} className="attributeGroup">
                       <h2>{attributeSet.name}</h2>
-                      {generateAttributes(attributeSet, this.onChangeAttr)}
+                      {generateAttributes(
+                        attributeSet,
+                        this.onChangeAttr,
+                        this.state.product.id
+                      )}
                     </div>
-                  );
+                  )
                 })}
             </div>
             {/* price */}
@@ -107,27 +114,31 @@ class ItemPage extends React.Component {
             <button
               className="PDPsubmitButton"
               onClick={() =>
-                onAddToCart(this.state.product, this.state.attributes)
+                addToCartFunc(this.state.product, this.state.attributes)
               }
-              disabled={this.state.isButtonDisabled}
+              disabled={
+                this.state.isButtonDisabled || !this.state.product.inStock
+              }
             >
-              ADD TO CART
+              {this.state.product.inStock ? 'ADD TO CART' : 'OUT OF STOCK'}
             </button>
-            <div
-              className="itemDescription"
-              dangerouslySetInnerHTML={{
-                __html: this.state.product.description,
-              }}
-            ></div>
+            <div className="itemDescription">
+              {parse(this.state.product.description)}
+            </div>
           </div>
         )}
       </div>
-    );
+    )
   }
 }
 
-function mapStateToProps(state) {
-  return { currency: state.currency };
+function mapStateToProps (state) {
+  return { currency: state.currency }
 }
 
-export default connect(mapStateToProps)(withRouter(ItemPage));
+ItemPage.propTypes = {
+  currency: PropTypes.string,
+  params: PropTypes.any
+}
+
+export default connect(mapStateToProps)(withRouter(ItemPage))

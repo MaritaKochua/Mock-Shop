@@ -1,4 +1,4 @@
-import { gql } from "@apollo/client";
+import { gql } from '@apollo/client'
 
 const CURRENCIES = gql`
   {
@@ -7,6 +7,6 @@ const CURRENCIES = gql`
       symbol
     }
   }
-`;
+`
 
-export default CURRENCIES;
+export default CURRENCIES

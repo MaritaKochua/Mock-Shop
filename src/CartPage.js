@@ -1,31 +1,43 @@
-import React from "react";
-import { connect } from "react-redux";
-import { generateCartItems } from "./common/generateCartItems";
+import React from 'react'
+import { connect } from 'react-redux'
+import GenerateCartItems from './common/GenerateCartItems'
+import PropTypes from 'prop-types'
 
 class CartPage extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {};
-    this.findPrice = this.findPrice.bind(this);
+  constructor (props) {
+    super(props)
+    this.state = {}
+    this.findPrice = this.findPrice.bind(this)
   }
-  findPrice(prices) {
+
+  findPrice (prices) {
     const currency = prices.find(
       (prod) => prod.currency.label === this.props.currency
-    );
-    return currency.currency.symbol + currency.amount;
+    )
+    return currency.currency.symbol + currency.amount
   }
-  render() {
+
+  render () {
     return (
       <div className="pageContainer cartPage">
         <h1>CART</h1>
-        {generateCartItems(this.props.cart, this.findPrice)}
+        {
+          <GenerateCartItems
+            cart={this.props.cart}
+            findPrice={this.findPrice}
+            photoCarousel={true}
+          />
+        }
       </div>
-    );
+    )
   }
 }
 
-function mapStateToProps(state) {
-  return { currency: state.currency, cart: state.cart };
+function mapStateToProps (state) {
+  return { currency: state.currency, cart: state.cart }
 }
-
-export default connect(mapStateToProps)(CartPage);
+CartPage.propTypes = {
+  currency: PropTypes.string,
+  cart: PropTypes.array
+}
+export default connect(mapStateToProps)(CartPage)

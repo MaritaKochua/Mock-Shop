@@ -1,93 +1,103 @@
-import CATEGORIES from "./queries/categories";
-import CURRENCIES from "./queries/currencies";
-import { client } from ".";
-import React from "react";
-import logo from "./common/img/logo.png";
-import store, { changeCurrency } from "./redux/store";
-import { Link } from "react-router-dom";
-import MiniCart from "./common/MiniCart";
-import { connect } from "react-redux";
+import { CATEGORIES } from './queries/categories'
+import CURRENCIES from './queries/currencies'
+import { client } from '.'
+import React from 'react'
+import logo from './common/img/logo.png'
+import store, { changeCurrency } from './redux/store'
+import { Link } from 'react-router-dom'
+import MiniCart from './common/MiniCart'
+import { connect } from 'react-redux'
+import PropTypes from 'prop-types'
 
 class Header extends React.Component {
-  constructor(props) {
-    super(props);
+  constructor (props) {
+    super(props)
     this.state = {
       categories: [],
       isCurrencyMenuOpen: false,
       currencies: [],
       currency: null,
-      isCartOpen: false,
-    };
-    this.toggleCurrencyMenu = this.toggleCurrencyMenu.bind(this);
-    this.toggleCurrency = this.toggleCurrency.bind(this);
-    this.toggleCart = this.toggleCart.bind(this);
-    this.calculateTotalItems = this.calculateTotalItems.bind(this);
+      isCartOpen: false
+    }
+    this.toggleCurrencyMenu = this.toggleCurrencyMenu.bind(this)
+    this.toggleCurrency = this.toggleCurrency.bind(this)
+    this.toggleCart = this.toggleCart.bind(this)
+    this.calculateTotalItems = this.calculateTotalItems.bind(this)
   }
 
-  componentDidMount() {
+  componentDidMount () {
     client.query({ query: CATEGORIES }).then((res) => {
-      let categories = [];
-      res.data.categories.map((category) => categories.push(category.name));
-      this.setState({ categories: categories });
-    });
+      const categories = []
+      res.data.categories.map((category) => categories.push(category.name))
+      this.setState({ categories: categories })
+    })
     client.query({ query: CURRENCIES }).then((res) => {
-      this.setState({ currencies: res.data.currencies });
-      this.setState({ currency: res.data.currencies[0]?.symbol });
-    });
-    window.addEventListener("scroll", () => {
-      this.setState({ isCartOpen: false, isCurrencyMenuOpen: false });
-    });
-  }
-  toggleCurrencyMenu() {
-    this.setState({ isCurrencyMenuOpen: !this.state.isCurrencyMenuOpen });
-  }
-  toggleCurrency(currency) {
-    store.dispatch(changeCurrency(currency.label));
-    this.setState({ currency: currency.symbol });
+      this.setState({ currencies: res.data.currencies })
+      this.setState({ currency: res.data.currencies[0]?.symbol })
+    })
+    window.addEventListener('scroll', () => {
+      this.setState({ isCartOpen: false, isCurrencyMenuOpen: false })
+    })
   }
 
-  toggleCart() {
-    this.setState({ isCartOpen: !this.state.isCartOpen });
-  }
-  calculateTotalItems() {
-    let items = 0;
-    this.props.cart.map((item) => (items += item.amount));
-    return items;
+  toggleCurrencyMenu () {
+    this.setState({ isCurrencyMenuOpen: !this.state.isCurrencyMenuOpen })
   }
 
-  render() {
+  toggleCurrency (currency) {
+    store.dispatch(changeCurrency(currency.label))
+    this.setState({ currency: currency.symbol })
+  }
+
+  toggleCart () {
+    this.setState({ isCartOpen: !this.state.isCartOpen })
+  }
+
+  calculateTotalItems () {
+    let items = 0
+    this.props.cart.map((item) => (items += item.amount))
+    return items
+  }
+
+  render () {
     return (
       <div className="header">
         <div
           className={`menu ${
             this.state.isCartOpen || this.state.isCurrencyMenuOpen
-              ? "overlay"
+              ? 'overlay'
               : null
           }`}
           onClick={() => {
-            this.setState({ isCurrencyMenuOpen: false, isCartOpen: false });
+            this.setState({ isCurrencyMenuOpen: false, isCartOpen: false })
           }}
         >
           {this.state.categories.map((category) => {
             return (
               <Link
                 key={category}
-                to={category === "all" ? "/" : "/" + category}
+                to={category === 'all' ? '/' : '/' + category}
                 className="menuLinks"
               >
                 <p>{category.toUpperCase()}</p>
               </Link>
-            );
+            )
           })}
         </div>
         <a href="./">
-          <img src={logo} className="logo" />
+          <img src={logo} className="logo" alt="logo" />
         </a>
         <div className="rightMenu">
           <div className="menuIcons" onClick={this.toggleCurrencyMenu}>
             <span className="currency">{this.state.currency}</span>
             <p>
-              <i className="arrowDown"></i>
+              <i
+                className={
+                  this.state.isCurrencyMenuOpen
+                    ? 'arrowDown arrowUp'
+                    : 'arrowDown'
+                }
+              ></i>
             </p>
             {this.state.isCurrencyMenuOpen && (
               <div className="currenciesMenu">
@@ -99,7 +109,7 @@ class Header extends React.Component {
                     >
                       {curr.symbol} {curr.label}
                     </p>
-                  );
+                  )
                 })}
               </div>
             )}
@@ -133,10 +143,14 @@ class Header extends React.Component {
           </div>
         </div>
       </div>
-    );
+    )
   }
 }
-function mapStateToProps(state) {
-  return { cart: state.cart };
+function mapStateToProps (state) {
+  return { cart: state.cart }
 }
-export default connect(mapStateToProps)(Header);
+
+Header.propTypes = {
+  cart: PropTypes.array
+}
+export default connect(mapStateToProps)(Header)
