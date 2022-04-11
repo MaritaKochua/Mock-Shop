@@ -1,6 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import GenerateCartItems from './common/GenerateCartItems'
+import GenerateCartItems from './common/generateCartItems'
 import PropTypes from 'prop-types'
 
 class CartPage extends React.Component {

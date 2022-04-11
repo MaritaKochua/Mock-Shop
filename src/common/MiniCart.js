@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
-import GenerateCartItems from './GenerateCartItems'
+import GenerateCartItems from './generateCartItems'
 import PropTypes from 'prop-types'
 
 class MiniCart extends React.Component {
